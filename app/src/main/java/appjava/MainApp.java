@@ -41,7 +41,43 @@ public class MainApp extends Application {
         stage.setScene(scene);
         stage.show();
     }
+    public class Player {
+        javafx.scene.image.Image playerImage;
+        int yVel = 0;
+        int xVel = 2; //always moving right;
+        int xImage;
+        int yImage;
+        int pastX = 0;
+        int pastY = 0;
+        final int width = 500;
+        final int height = 400;
 
+        public Player(int xImage, int yImage) {
+            playerImage = new javafx.scene.image.Image(getClass().getResourceAsStream("/09417f97e1834efdba30f4619691a6e4-removebg-preview.png"));
+            this.xImage = xImage;
+            this.yImage = yImage;
+        }
+
+
+        public void update(GraphicsContext gc) {
+            //changes to the character
+            //if xVel = 0, then nothing happens.
+
+            yVel++;
+            xImage += xVel;
+
+            //clears
+            gc.clearRect(pastX, pastY, width, height); //removes old player frame
+            gc.drawImage(playerImage, xImage, yImage, width, height);
+
+            pastX = xImage; //changes current to old x and y
+            pastY = yImage;
+        }
+
+
+
+
+    }
     public class StickFigure {
         List<Line> figure = new ArrayList<Line>();
         
