@@ -95,7 +95,16 @@ public class MainApp extends Application {
         stage.show();
 
     }
-
+    public class Player {
+        javafx.scene.image.Image playerImage;
+        int yVel = 0;
+        int xVel = 2; //always moving right;
+        int xImage;
+        int yImage;
+        int pastX = 0;
+        int pastY = 0;
+        final int width = 500;
+        final int height = 400;
 
     public static void main(String[] args) {
         launch(args);
