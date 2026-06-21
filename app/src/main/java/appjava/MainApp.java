@@ -4,6 +4,8 @@ import java.util.*;
 import javafx.animation.AnimationTimer;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -16,6 +18,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.geometry.*;
 import javafx.stage.Stage;
@@ -23,6 +26,7 @@ import javafx.scene.canvas.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+
 public class MainApp extends Application {
     double height = 915;
     double width = 412;
@@ -30,6 +34,7 @@ public class MainApp extends Application {
     int scoreCount = 0;
     String conversion = "0";
 
+    ArrayList<ImageView> obstacles = new ArrayList<>();
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -59,6 +64,7 @@ public class MainApp extends Application {
                 tung.canJump = false;
             }
         });
+
         jump.setLayoutX(20);
         jump.setLayoutY(700);
 
@@ -73,17 +79,21 @@ public class MainApp extends Application {
 
             @Override
             public void handle(long now) {
-
+                // Update Loop
                 scoreCount++; //each frame, increment score by 1;
                 conversion = Integer.toString(scoreCount);
                 score.setText("Score: " + conversion); //changes the more you play.
                 tung.update(gc);
+                
+                for (ImageView o : obstacles) {
+                    Bounds playerBounds = tung.hitbox.getBoundsInParent();
+                    Bounds oBounds = o.getBoundsInParent();
+                    if (playerBounds.intersects(oBounds));
+                }
 
                 // elapsedSeconds = (now - startTime) / 1_000_000_000.0;
 
-                // Update Loop
-
-
+                
             }
         };
         timer.start();
@@ -91,15 +101,14 @@ public class MainApp extends Application {
 
         Scene scene = new Scene(root, width, height);
 
-
         // Showing Everything
         stage.setTitle("JavaFX and Gradle");
         stage.setScene(scene);
         stage.show();
-
     }
 
     public class Player {
+        // instance variables
         javafx.scene.image.Image playerImage;
         int yVel = 0;
         int xVel = 2; //always moving right;
@@ -107,30 +116,40 @@ public class MainApp extends Application {
         int yImage;
         int pastX = 0;
         int pastY = 0;
+
         final int width1 = 300;
         final int height1 = 500;
         final int gravity = 1;
+
         boolean canJump = true;
+
+        ImageView hitbox;
+
         public Player (int xImage, int yImage){
             playerImage = new javafx.scene.image.Image(getClass().getResourceAsStream("/rwew-removebg-preview.png"));
             this.xImage = xImage;
             this.yImage = yImage;
+            hitbox = new ImageView(playerImage);
+            hitbox.setFitHeight(height1);
+            hitbox.setFitWidth(width1);
+            hitbox.setTranslateY(yImage);
+            hitbox.setTranslateX(xImage);
         }
-        public void isJump (){
-            yVel = -22; //makes yImage go up by 20;
 
+        public void isJump (){
+            yVel = -20; //makes yImage go up by 20;
         }
+
         public void update (GraphicsContext gc) {
             pastX = xImage; //clears old place where the obj was
             pastY = yImage;
             gc.clearRect(pastX,pastY, width1, height1);
 
-            xImage+=xVel;
-            if(xImage > width/2){
+            xImage += xVel;
+
+            if(xImage > width / 2){
                 xImage = -xImage;
             }
-
-
 
             yVel+= gravity; //if jumping, gravity decreases yVel from -20 to 0 overtime
 
@@ -146,7 +165,4 @@ public class MainApp extends Application {
             gc.drawImage(playerImage, xImage, yImage, width1, height1);
         }
     }
-
-    //classes
-
 }
