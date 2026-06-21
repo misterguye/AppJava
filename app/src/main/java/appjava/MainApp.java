@@ -26,143 +26,131 @@ import javafx.scene.canvas.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import java.util.ArrayList;
 
 public class MainApp extends Application {
     double height = 915;
     double width = 412;
-    double elapsedSeconds = 0;
     int scoreCount = 0;
-    String conversion = "0";
 
-    ArrayList<ImageView> obstacles = new ArrayList<>();
+    ImageView myGhiniBox;
+    ImageView playerView;
 
     @Override
     public void start(Stage stage) throws Exception {
-        Pane root = new Pane(); //allows the arrangement of things on the app
-        Canvas canva = new Canvas(width, height); //creates grid
-        GraphicsContext gc = canva.getGraphicsContext2D(); //allows creation of objects
-        Player tung = new Player(0,200);
+        Pane root = new Pane(); // No Canvas needed
 
-        Label score = new Label("Score: 0"); //creates a score label
+        // --- Player ImageView ---
+        Image playerImage = new Image(getClass().getResourceAsStream("/rwew-removebg-preview.png"));
+        playerView = new ImageView(playerImage);
+        playerView.setFitWidth(250);
+        playerView.setFitHeight(500);
+        playerView.setLayoutX(150);
+        playerView.setLayoutY(200);
 
-        score.setLayoutX(275); //moves to top  right
+        // --- Obstacle ImageView ---
+        Image ghiniImage = new Image(getClass().getResourceAsStream("/lamborghini.png"));
+        myGhiniBox = new ImageView(ghiniImage);
+        myGhiniBox.setFitWidth(300);
+        myGhiniBox.setFitHeight(250);
+        myGhiniBox.setLayoutX(300);
+        myGhiniBox.setLayoutY(300);
+
+        // --- Score Label ---
+        Label score = new Label("Score: 0");
+        score.setLayoutX(275);
         score.setLayoutY(20);
         score.setFont(new Font("Arial", 24));
         score.setTextFill(Color.RED);
 
+        // --- Jump Button ---
         Circle circle = new Circle(40);
-
         circle.setFill(Color.LIGHTGRAY);
-
         Label jumpLabel = new Label("Jump");
+        StackPane jump = new StackPane(circle, jumpLabel);
+        jump.setLayoutX(20);
+        jump.setLayoutY(700);
 
-        StackPane jump = new StackPane(circle, jumpLabel); //stacks the label above the circle, to create abutton
+        // Add everything to root (no canvas)
+        root.getChildren().addAll(myGhiniBox, playerView, score, jump);
 
+        Player tung = new Player(playerView);
+
+        
         jump.setOnMousePressed(e -> {
-            if(tung.canJump){
+            if (tung.canJump) {
                 tung.isJump();
                 tung.canJump = false;
             }
         });
 
-        jump.setLayoutX(20);
-        jump.setLayoutY(700);
-
-        root.getChildren().add(canva);
-        root.getChildren().add(score);
-        root.getChildren().add(jump);
-
         AnimationTimer timer = new AnimationTimer() {
-
-
-            long startTime = 0;
-
+            int counter = 0;
             @Override
             public void handle(long now) {
-                // Update Loop
-                scoreCount++; //each frame, increment score by 1;
-                conversion = Integer.toString(scoreCount);
-                score.setText("Score: " + conversion); //changes the more you play.
-                tung.update(gc);
+                scoreCount++;
+                score.setText("Score: " + scoreCount);
+
+                tung.update(); // No gc needed
+
+                // Collision check — now works correctly!
+                Bounds playerBounds = playerView.getBoundsInParent();
+                Bounds oBounds = myGhiniBox.getBoundsInParent();
+
                 
-                for (ImageView o : obstacles) {
-                    Bounds playerBounds = tung.hitbox.getBoundsInParent();
-                    Bounds oBounds = o.getBoundsInParent();
-                    if (playerBounds.intersects(oBounds));
+                if (playerBounds.intersects(oBounds)) {
+                    counter++;
+                    System.out.println("Collision detected at (" + playerBounds.getCenterX() + "," + playerBounds.getCenterY() + ") and [" + oBounds.getCenterX() + "," + oBounds.getCenterY() + "] " + counter);
+                    // e.g. timer.stop(), show game over screen, etc.
                 }
-
-                // elapsedSeconds = (now - startTime) / 1_000_000_000.0;
-
-                
             }
         };
         timer.start();
 
-
         Scene scene = new Scene(root, width, height);
-
-        // Showing Everything
         stage.setTitle("JavaFX and Gradle");
         stage.setScene(scene);
         stage.show();
     }
 
     public class Player {
-        // instance variables
-        javafx.scene.image.Image playerImage;
-        int yVel = 0;
-        int xVel = 2; //always moving right;
-        int xImage;
-        int yImage;
-        int pastX = 0;
-        int pastY = 0;
-
-        final int width1 = 300;
-        final int height1 = 500;
-        final int gravity = 1;
-
+        double yVel = 0;
+        double xVel = 2;
+        double xImage;
+        double yImage;
+        final double gravity = 1;
         boolean canJump = true;
+        ImageView view; // reference to the ImageView in the scene
 
-        ImageView hitbox;
-
-        public Player (int xImage, int yImage){
-            playerImage = new javafx.scene.image.Image(getClass().getResourceAsStream("/rwew-removebg-preview.png"));
-            this.xImage = xImage;
-            this.yImage = yImage;
-            hitbox = new ImageView(playerImage);
-            hitbox.setFitHeight(height1);
-            hitbox.setFitWidth(width1);
-            hitbox.setTranslateY(yImage);
-            hitbox.setTranslateX(xImage);
+        public Player(ImageView view) {
+            this.view = view;
+            this.xImage = view.getLayoutX();
+            this.yImage = view.getLayoutY();
         }
 
-        public void isJump (){
-            yVel = -20; //makes yImage go up by 20;
+        public void isJump() {
+            yVel = -20;
         }
 
-        public void update (GraphicsContext gc) {
-            pastX = xImage; //clears old place where the obj was
-            pastY = yImage;
-            gc.clearRect(pastX,pastY, width1, height1);
+        public void update() {
+            xImage += xVel / 10;
 
-            xImage += xVel;
-
-            if(xImage > width / 2){
+            if (xImage > width / 2) {
                 xImage = -xImage;
             }
 
-            yVel+= gravity; //if jumping, gravity decreases yVel from -20 to 0 overtime
+            yVel += gravity;
+            yImage += yVel;
 
-            yImage += yVel; //gravity, pulling down, disabled when jumping
-
-            if (yImage >= 200) { //if gravity pulls it below the line, then resets yVel to 0;
+            if (yImage >= 200) {
                 yImage = 200;
                 yVel = 0;
                 canJump = true;
             }
 
-            //obj always moving right
-            gc.drawImage(playerImage, xImage, yImage, width1, height1);
+            // Move the ImageView — this is what makes collision work
+            view.setLayoutX(xImage);
+            view.setLayoutY(yImage);
         }
     }
 }
