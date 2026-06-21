@@ -21,9 +21,10 @@ import javafx.scene.canvas.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+
 public class MainApp extends Application {
-    int height = 915;
-    int width = 412;
+    double screenHeight = 915;
+    double screenWidth = 412;
 
     final int GRAVITY = -5;
     int gravity = GRAVITY;
@@ -36,17 +37,17 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        VBox root = new VBox(); //allows the arrangement of things on the app
-        Canvas canva = new Canvas(width, height); //creates grid
+        Pane root = new Pane(); //allows the arrangement of things on the app
+        Canvas canva = new Canvas(screenWidth, screenHeight); //creates grid
         GraphicsContext gc = canva.getGraphicsContext2D(); //allows creation of objects
-        Player p = new Player(200,200);
+        Player p = new Player(0,600);
 
         Label score = new Label("0"); //creates score
         score.setFont(new Font("Arial", 24));
         root.getChildren().add(score);
 
         //make it top right for the score
-        score.setLayoutX(400);
+        score.setLayoutX(350);
         score.setLayoutY(20);
 
         AnimationTimer timer = new AnimationTimer() {
@@ -76,7 +77,7 @@ public class MainApp extends Application {
         timer.start();
 
         root.getChildren().add(canva);
-        Scene scene = new Scene(root, width, height);
+        Scene scene = new Scene(root, screenWidth, screenHeight);
 
 
         // Showing Everything
@@ -90,10 +91,10 @@ public class MainApp extends Application {
         javafx.scene.image.Image playerImage;
         int yVel = 0;
         int xVel = 2; //always moving right;
-        int xImage;
-        int yImage;
-        int pastX = 0;
-        int pastY = 0;
+        double xImage;
+        double yImage;
+        double pastX = 0;
+        double pastY = 0;
         final int width = 200;
         final int height = 300;
         public Player (int xImage, int yImage){
@@ -101,13 +102,13 @@ public class MainApp extends Application {
             this.xImage = xImage;
             this.yImage = yImage;
         }
+
         public void update (GraphicsContext gc) {
             pastX = xImage; //clears old place where the obj was
             pastY = yImage;
-            gc.clearRect(pastX,pastY, width, height);
+            gc.clearRect(pastX,pastY, screenWidth, screenHeight);
 
-            xImage+=2;
-
+            xImage = (xImage + 1) % (screenWidth);
           //obj always moving right
             gc.drawImage(playerImage, xImage, yImage, width, height);
         }
