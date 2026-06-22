@@ -36,6 +36,8 @@ public class MainApp extends Application {
     ImageView myGhiniBox;
     ImageView playerView;
 
+    boolean continues = false;
+
     @Override
     public void start(Stage stage) throws Exception {
         Pane root = new Pane(); // No Canvas needed
@@ -59,8 +61,8 @@ public class MainApp extends Application {
         playerView = new ImageView(playerImage);
         playerView.setFitWidth(100);
         playerView.setFitHeight(300);
-        playerView.setLayoutX(0);
-        playerView.setLayoutY(200);
+        playerView.setLayoutX(40);
+        playerView.setLayoutY(400);
 
         // --- Obstacle ImageView ---
         Image ghiniImage = new Image(getClass().getResourceAsStream("/4170d4343f6a626b60450f27f097d3fd-removebg-preview.png"));
@@ -68,7 +70,7 @@ public class MainApp extends Application {
         myGhiniBox.setFitHeight(50);
         myGhiniBox.setFitWidth(100);
         myGhiniBox.setLayoutX(300);
-        myGhiniBox.setLayoutY(600);
+        myGhiniBox.setLayoutY(700);
 
         // --- Score Label ---
         Label score = new Label("Score: 0");
@@ -78,25 +80,39 @@ public class MainApp extends Application {
         score.setTextFill(Color.RED);
 
         // --- Jump Button ---
-        Circle circle = new Circle(40);
+        Circle circle = new Circle(50);
         circle.setFill(Color.LIGHTGRAY);
+
         Label jumpLabel = new Label("Jump");
+        jumpLabel.setFont(new Font("Arial", 16));
+
         StackPane jump = new StackPane(circle, jumpLabel);
         jump.setLayoutX(20);
-        jump.setLayoutY(700);
+        jump.setLayoutY(780);
+
+        //High Score
+        Label highScore = new Label("High Score: ");
+        highScore.setTextFill(Color.RED);
+        highScore.setFont(new Font("Arial", 24));
+        highScore.setLayoutX(5);
+        highScore.setLayoutY(20);
 
         Label gameOver = new Label("GAME OVER");
         Font gameOverFont = new Font("Arial", 32);
         gameOver.setFont(gameOverFont);
         gameOver.setLayoutX(110);
         gameOver.setLayoutY(425);
+        gameOver.setTextFill(Color.RED);
 
-        Rectangle rec = new Rectangle(250, 100);
 
-        rec.setX((width - 250) /2);
-        rec.setY((height - 100) /2);
+        Button reset = new Button("RESET");
+        reset.setMaxSize(100,50);
+        VBox resetOption = new VBox(20, gameOver, reset);
+        resetOption.setAlignment(Pos.CENTER);
+        resetOption.setPrefSize(width, height);
+        resetOption.setVisible(false);
         // Add everything to root (no canvas)
-        root.getChildren().addAll(blueSky, road, myGhiniBox, playerView, score, jump, rec, gameOver);
+        root.getChildren().addAll(blueSky, road, myGhiniBox, playerView, score, highScore, jump,resetOption);
 
         Player tung = new Player(playerView);
 
@@ -108,8 +124,10 @@ public class MainApp extends Application {
                 tung.canJump = false;
             }
         });
-        AnimationTimer timer;
-         timer = new AnimationTimer() {
+
+        AnimationTimer timer = new AnimationTimer() {
+
+            int highScore1 = 0;
             int counter = 0;
             @Override
             public void handle(long now) {
@@ -125,6 +143,11 @@ public class MainApp extends Application {
                     Bounds oBounds = myGhiniBox.getBoundsInParent();
                     if (playerBounds.intersects(oBounds)) {
                         this.stop();
+                        if(scoreCount > highScore1){
+                            highScore1 = scoreCount;
+                            highScore.setText("High Score: " + highScore1);
+                        }
+                        resetOption.setVisible(true);
 
                     }
                 }
@@ -134,6 +157,14 @@ public class MainApp extends Application {
         };
         timer.start();
 
+        reset.setOnMousePressed(e -> {
+            continues = true;
+            tung.ghiniX = 500;
+            scoreCount = 0;
+            resetOption.setVisible(false);
+            timer.start();
+
+        });
         Scene scene = new Scene(root, width, height);
         stage.setTitle("JavaFX and Gradle");
         stage.setScene(scene);
@@ -176,8 +207,8 @@ public class MainApp extends Application {
             yVel += gravity;
             yImage += yVel;
 
-            if (yImage >= 400) {
-                yImage = 400;
+            if (yImage >= 450) {
+                yImage = 450;
                 yVel = 0;
                 canJump = true;
             }
