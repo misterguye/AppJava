@@ -31,7 +31,7 @@ import java.util.ArrayList;
 public class MainApp extends Application {
     double height = 915;
     double width = 412;
-    int scoreCount = 0;
+    double scoreCount = 0;
 
     ImageView myGhiniBox;
     ImageView playerView;
@@ -127,14 +127,23 @@ public class MainApp extends Application {
 
         AnimationTimer timer = new AnimationTimer() {
 
-            int highScore1 = 0;
+            double highScore1 = 0;
             int counter = 0;
+            long lastFrame;
             @Override
             public void handle(long now) {
-                scoreCount++;
-                score.setText("Score: " + scoreCount);
+                double dt = 0;
+                if (lastFrame == 0) {
+                    dt = 0;
+                } else {
+                    dt = (now - lastFrame) / 1_000_000_000.0;
+                }
+                lastFrame = now;
 
-                tung.update(); // No gc needed
+                scoreCount += (dt * 60);
+                score.setText("Score: " + (int) scoreCount);
+
+                tung.update(dt); // No gc needed
 
                 // Collision check — now works correctly!
 
@@ -145,7 +154,7 @@ public class MainApp extends Application {
                         this.stop();
                         if(scoreCount > highScore1){
                             highScore1 = scoreCount;
-                            highScore.setText("High Score: " + highScore1);
+                            highScore.setText("High Score: " + (int) highScore1);
                         }
                         resetOption.setVisible(true);
 
@@ -192,20 +201,20 @@ public class MainApp extends Application {
             yVel = -25;
         }
 
-        public void update() {
+        public void update(double dt) {
             if(ghiniX < -400) {
                 ghiniX = 500;
             }
 
-            ghiniX-= (scoreCount/250) + 7;
+            ghiniX -= ((scoreCount / 250) + 7) * dt * 60;
             myGhiniBox.setX(ghiniX);
 
             if (xImage > width / 2) {
                 xImage = -xImage;
             }
 
-            yVel += gravity;
-            yImage += yVel;
+            yVel += gravity * dt * 60;
+            yImage += yVel * dt * 60;
 
             if (yImage >= 450) {
                 yImage = 450;
