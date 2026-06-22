@@ -4,6 +4,8 @@ import java.util.*;
 import javafx.animation.AnimationTimer;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -16,6 +18,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.geometry.*;
 import javafx.stage.Stage;
@@ -23,130 +26,166 @@ import javafx.scene.canvas.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import java.util.ArrayList;
+
 public class MainApp extends Application {
     double height = 915;
     double width = 412;
-    double elapsedSeconds = 0;
     int scoreCount = 0;
-    String conversion = "0";
 
+    ImageView myGhiniBox;
+    ImageView playerView;
 
     @Override
     public void start(Stage stage) throws Exception {
-        Pane root = new Pane(); //allows the arrangement of things on the app
-        Canvas canva = new Canvas(width, height); //creates grid
-        GraphicsContext gc = canva.getGraphicsContext2D(); //allows creation of objects
-        Player tung = new Player(0,200);
+        Pane root = new Pane(); // No Canvas needed
 
-        Label score = new Label("Score: 0"); //creates a score label
+        ImageView blueSky = new ImageView(new javafx.scene.image.Image(getClass().getResourceAsStream("/360_F_105600193_Bq7GrUHfRaaPQeoJW6m9kDWIVuXvPqHQ.jpg")));
+        blueSky.setFitHeight(715);
+        blueSky.setFitWidth(412);
+        blueSky.setX(0);
+        blueSky.setY(0);
 
-        score.setLayoutX(275); //moves to top  right
+        ImageView road = new ImageView(new javafx.scene.image.Image(getClass().getResourceAsStream("/empty-straight-road-marking-horizontal-260nw-2090504992.jpg")));
+        road.setFitWidth(412);
+        road.setFitHeight(200);
+        road.setX(0);
+        road.setY(750);
+
+        // --- Player ImageView ---
+
+        Image playerImage = new Image(getClass().getResourceAsStream("/tung_tungsahur.png"));
+
+        playerView = new ImageView(playerImage);
+        playerView.setFitWidth(100);
+        playerView.setFitHeight(300);
+        playerView.setLayoutX(0);
+        playerView.setLayoutY(200);
+
+        // --- Obstacle ImageView ---
+        Image ghiniImage = new Image(getClass().getResourceAsStream("/4170d4343f6a626b60450f27f097d3fd-removebg-preview.png"));
+        myGhiniBox = new ImageView(ghiniImage);
+        myGhiniBox.setFitHeight(50);
+        myGhiniBox.setFitWidth(100);
+        myGhiniBox.setLayoutX(300);
+        myGhiniBox.setLayoutY(600);
+
+        // --- Score Label ---
+        Label score = new Label("Score: 0");
+        score.setLayoutX(275);
         score.setLayoutY(20);
         score.setFont(new Font("Arial", 24));
         score.setTextFill(Color.RED);
 
+        // --- Jump Button ---
         Circle circle = new Circle(40);
-
         circle.setFill(Color.LIGHTGRAY);
-
         Label jumpLabel = new Label("Jump");
+        StackPane jump = new StackPane(circle, jumpLabel);
+        jump.setLayoutX(20);
+        jump.setLayoutY(700);
 
-        StackPane jump = new StackPane(circle, jumpLabel); //stacks the label above the circle, to create abutton
+        Label gameOver = new Label("GAME OVER");
+        Font gameOverFont = new Font("Arial", 32);
+        gameOver.setFont(gameOverFont);
+        gameOver.setLayoutX(110);
+        gameOver.setLayoutY(425);
+
+        Rectangle rec = new Rectangle(250, 100);
+
+        rec.setX((width - 250) /2);
+        rec.setY((height - 100) /2);
+        // Add everything to root (no canvas)
+        root.getChildren().addAll(blueSky, road, myGhiniBox, playerView, score, jump, rec, gameOver);
+
+        Player tung = new Player(playerView);
+
+
 
         jump.setOnMousePressed(e -> {
-            if(tung.canJump){
+            if (tung.canJump) {
                 tung.isJump();
                 tung.canJump = false;
             }
         });
-        jump.setLayoutX(20);
-        jump.setLayoutY(700);
-
-        root.getChildren().add(canva);
-        root.getChildren().add(score);
-        root.getChildren().add(jump);
-
-        AnimationTimer timer = new AnimationTimer() {
-
-
-            long startTime = 0;
-
+        AnimationTimer timer;
+         timer = new AnimationTimer() {
+            int counter = 0;
             @Override
             public void handle(long now) {
+                scoreCount++;
+                score.setText("Score: " + scoreCount);
 
-                scoreCount++; //each frame, increment score by 1;
-                conversion = Integer.toString(scoreCount);
-                score.setText("Score: " + conversion); //changes the more you play.
-                tung.update(gc);
+                tung.update(); // No gc needed
 
-                // elapsedSeconds = (now - startTime) / 1_000_000_000.0;
-
-                // Update Loop
+                // Collision check — now works correctly!
 
 
-            }
+                    Bounds playerBounds = playerView.getBoundsInParent();
+                    Bounds oBounds = myGhiniBox.getBoundsInParent();
+                    if (playerBounds.intersects(oBounds)) {
+                        this.stop();
+
+                    }
+                }
+
+
+
         };
         timer.start();
 
-
         Scene scene = new Scene(root, width, height);
-
-
-        // Showing Everything
         stage.setTitle("JavaFX and Gradle");
         stage.setScene(scene);
         stage.show();
-
     }
 
+
     public class Player {
-        javafx.scene.image.Image playerImage;
-        int yVel = 0;
-        int xVel = 2; //always moving right;
-        int xImage;
-        int yImage;
-        int pastX = 0;
-        int pastY = 0;
-        final int width1 = 300;
-        final int height1 = 500;
-        final int gravity = 1;
+        double yVel = 0;
+        double xVel = 2;
+        double xImage;
+        double yImage;
+        final double gravity = 1;
         boolean canJump = true;
-        public Player (int xImage, int yImage){
-            playerImage = new javafx.scene.image.Image(getClass().getResourceAsStream("/rwew-removebg-preview.png"));
-            this.xImage = xImage;
-            this.yImage = yImage;
-        }
-        public void isJump (){
-            yVel = -22; //makes yImage go up by 20;
+        public double ghiniX = 300;
+        ImageView view; // reference to the ImageView in the scene
 
+        public Player(ImageView view) {
+            this.view = view;
+            this.xImage = view.getLayoutX();
+            this.yImage = view.getLayoutY();
         }
-        public void update (GraphicsContext gc) {
-            pastX = xImage; //clears old place where the obj was
-            pastY = yImage;
-            gc.clearRect(pastX,pastY, width1, height1);
 
-            xImage+=xVel;
-            if(xImage > width/2){
+        public void isJump() {
+            yVel = -25;
+        }
+
+        public void update() {
+            if(ghiniX < -400) {
+                ghiniX = 500;
+            }
+
+            ghiniX-= (scoreCount/250) + 7;
+            myGhiniBox.setX(ghiniX);
+
+            if (xImage > width / 2) {
                 xImage = -xImage;
             }
 
+            yVel += gravity;
+            yImage += yVel;
 
-
-            yVel+= gravity; //if jumping, gravity decreases yVel from -20 to 0 overtime
-
-            yImage += yVel; //gravity, pulling down, disabled when jumping
-
-            if (yImage >= 200) { //if gravity pulls it below the line, then resets yVel to 0;
-                yImage = 200;
+            if (yImage >= 400) {
+                yImage = 400;
                 yVel = 0;
                 canJump = true;
             }
 
-            //obj always moving right
-            gc.drawImage(playerImage, xImage, yImage, width1, height1);
+            // Move the ImageView — this is what makes collision work
+            view.setLayoutX(xImage);
+            view.setLayoutY(yImage);
         }
     }
-
-    //classes
 
 }
