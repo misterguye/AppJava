@@ -15,3 +15,11 @@ javafx {
 application {
     mainClass = 'appjava.MainApp'
 }
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
