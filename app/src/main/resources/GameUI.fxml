@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="915.0" prefWidth="412.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="appjava.GameController">
+    
+    <!-- Background Sky -->
+    <ImageView fx:id="blueSky" fitHeight="715.0" fitWidth="412.0" layoutX="0.0" layoutY="0.0">
+    </ImageView>
+    
+    <!-- Road -->
+    <ImageView fx:id="road" fitHeight="200.0" fitWidth="412.0" layoutX="0.0" layoutY="750.0">
+    </ImageView>
+    
+    <!-- Obstacle (Ghini) -->
+    <ImageView fx:id="myGhiniBox" fitHeight="50.0" fitWidth="100.0" layoutX="300.0" layoutY="700.0">
+    </ImageView>
+    
+    <!-- Player -->
+    <ImageView fx:id="playerView" fitHeight="300.0" fitWidth="100.0" layoutX="40.0" layoutY="400.0">
+    </ImageView>
+    
+    <!-- Score Label -->
+    <Label fx:id="score" layoutX="275.0" layoutY="20.0" text="Score: 0" textFill="#ff0000">
+        <font>
+            <Font name="Arial" size="24.0"/>
+        </font>
+    </Label>
+    
+    <!-- High Score Label -->
+    <Label fx:id="highScore" layoutX="5.0" layoutY="20.0" text="High Score: " textFill="#ff0000">
+        <font>
+            <Font name="Arial" size="24.0"/>
+        </font>
+    </Label>
+    
+    <!-- Jump Button -->
+    <StackPane fx:id="jump" layoutX="20.0" layoutY="780.0">
+        <children>
+            <Circle fill="#d3d3d3" radius="50.0"/>
+            <Label text="Jump">
+                <font>
+                    <Font name="Arial" size="16.0"/>
+                </font>
+            </Label>
+        </children>
+    </StackPane>
+    
+    <!-- Game Over Screen -->
+    <VBox fx:id="resetOption" alignment="CENTER" prefHeight="915.0" prefWidth="412.0" spacing="20.0" visible="false">
+        <children>
+            <Label text="GAME OVER" textFill="#ff0000">
+                <font>
+                    <Font name="Arial" size="32.0"/>
+                </font>
+            </Label>
+            <Button fx:id="reset" maxHeight="50.0" maxWidth="100.0" text="RESET"/>
+        </children>
+    </VBox>
+</Pane>
